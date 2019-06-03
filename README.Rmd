@@ -12,15 +12,15 @@ knitr::opts_chunk$set(
 ```
 # MetroApp
 
-##Metropoly App 1st meeting
-### 03/06/2019
+This repo contains code for the [Metropoly](https://www.facebook.com/InstituteforTransportStudies/posts/the-metropoly-game-is-played-each-year-by-its-masters-students-teams-travel-arou/1806155339412749/) game.
+We aim to enable something like this:
 
-####Suggestion from Andrew 
 1 - A team registers to play in a game with other teams. Each team is identified by a name chosen by the team members.   
 
 2 - Each team consists of two groups travelling independently and the destinations visited by each group will need to be recorded separately  
 
 3 - An online version of the score sheet (attached) would be required to allow each group to update their progress by ticking stations passed through and destinations visited  
+
 4 - Each time a score sheet is updated by a group, the overall score for that team is recalculated (do logical OR between the two group score sheets to create an overall single score sheet for the team and sum the points)  
 
 5 - A leader board showing the overall score for each team will be available to all teams as they travel round the area, although they won't be able to see what destinations other teams have visited.
