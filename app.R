@@ -1,4 +1,5 @@
 library(shiny)
+library(leaflet)
 
 #ui <- fluidPage(
 #  h1("Metropoly game")
@@ -29,11 +30,26 @@ ui <- navbarPage(
     )
   ),
   tabPanel(title = "Leader board"),
-  tabPanel(title = "Maps")
+  tabPanel(
+    title = "Maps",
+    leafletOutput("mymap"),
+    p(),
+    actionButton("recalc", "New points")
+  )
   
 )
 
 server <- function(input, output) {
+  points <- eventReactive(input$recalc, {
+    cbind(rnorm(40) * 2, rnorm(40) + 6)
+  }, ignoreNULL = FALSE)
+  
+  output$mymap <- renderLeaflet({
+    leaflet() %>%
+      addProviderTiles(providers$Stamen.TonerLite,
+                       options = providerTileOptions(noWrap = TRUE)) %>%
+      addMarkers(data = points())
+  })
 }
 
 shinyApp(ui = ui, server = server)
