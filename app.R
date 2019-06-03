@@ -11,6 +11,9 @@ library(leaflet)
 team_names = 1:3
 team_columns_names = paste0("team_", team_names)
 
+# Idea: select team at the beginning
+# stations = readr::read_csv("stations.csv") # todo: create stations .csv with name and number points
+# robin to geocode them and put on map
 stations = tibble::tibble(station = c("Apperly Bridge", "S2"),
                           points = c(200, 200))
 
