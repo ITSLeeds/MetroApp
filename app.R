@@ -5,18 +5,18 @@ library(leaflet)
 #  h1("Metropoly game")
 #  )
 
-
 # minimum data needed for game --------------------------------------------
 
-team_names = 1:3
-
 # todo: add 2 groups per team
+team_names = 1:3
 team_columns_names = paste0("team_", team_names)
 
 stations = tibble::tibble(station = c("Apperly Bridge", "S2"),
                           points = c(200, 200))
 
-initial_scores = rep(0, nrow(scoresheet))
+
+initial_scores = rep(0, nrow(stations))
+
 # test scoring: group 2 has scored in station 1, 3 has scored in 1 and 2
 team_initial_scores = replicate(length(team_names), initial_scores)
 team_initial_scores[1, 2] = 1
@@ -49,7 +49,7 @@ ui <- navbarPage(
                      "Group B" = 2),
       selected = 1
     ),
-    shiny::tableOutput('scoresheet')
+    shiny::tableOutput("shiny_scoresheet")
   ),
   tabPanel(title = "Leader board"),
   tabPanel(
@@ -62,9 +62,10 @@ ui <- navbarPage(
 )
 
 server <- function(input, output) {
+  
   # If we get the scores from Google Sheets:
   # scoresheet = function_to_read_from_google_sheets()
-  output$scoresheet = renderTable(scoresheet[c(names(scoresheet)[1:2], paste0("team_", input$teamname))])
+  output$shiny_scoresheet = renderTable(scoresheet[c(names(scoresheet)[1:2], paste0("team_", input$teamname))])
   
   # This is the map
   points <- eventReactive(input$recalc, {
