@@ -1,0 +1,54 @@
+---
+output: github_document
+---
+
+<!-- README.md is generated from README.Rmd. Please edit that file -->
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+# MetroApp
+
+##Metropoly App 1st meeting
+### 03/06/2019
+
+####Suggestion from Andrew 
+1 - A team registers to play in a game with other teams. Each team is identified by a name chosen by the team members.   
+
+2 - Each team consists of two groups travelling independently and the destinations visited by each group will need to be recorded separately  
+
+3 - An online version of the score sheet (attached) would be required to allow each group to update their progress by ticking stations passed through and destinations visited  
+4 - Each time a score sheet is updated by a group, the overall score for that team is recalculated (do logical OR between the two group score sheets to create an overall single score sheet for the team and sum the points)  
+
+5 - A leader board showing the overall score for each team will be available to all teams as they travel round the area, although they won't be able to see what destinations other teams have visited.
+
+####Robin's idea 
+
+I've seen Google Sheets, with appropriate team settings, used effectively for such things. We could create an interactive scoreboard that consumes data from such an online spreadsheet.
+
+#### What kind of functions we need to make it work
+
+[Input]
+for scoreboard 
+- The name of station  
+- The team name   
+- The group name  
+- The visited station  
+- The visited landmark
+
+[Output]  
+- Current socre of each team on Leader board page    
+
+[Functions]  
+- Store each team's score separately   
+- Calculrate the current score of each team  
+- Associate the station and landmark name with their point
+- 
+
+#### Notes  
+We need to consider that almost all team will upload information via Smartphone  
+It means that UI needs to be friendly to Smartphone
+
