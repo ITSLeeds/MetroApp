@@ -14,9 +14,7 @@ team_columns_names = paste0("team_", team_names)
 # Idea: select team at the beginning
 # stations = readr::read_csv("stations.csv") # todo: create stations .csv with name and number points
 # robin to geocode them and put on map
-stations = tibble::tibble(station = c("Apperly Bridge", "S2"),
-                          points = c(200, 200))
-
+stations = sf::read_sf("stations.geojson")
 
 initial_scores = rep(0, nrow(stations))
 
@@ -24,8 +22,8 @@ initial_scores = rep(0, nrow(stations))
 team_initial_scores = replicate(length(team_names), initial_scores)
 team_initial_scores[1, 2] = 1
 team_initial_scores[1:2, 3] = 1
-scoresheet = cbind(stations, team_initial_scores)
-names(scoresheet)[3:ncol(scoresheet)] = team_columns_names
+scoresheet = cbind(sf::st_drop_geometry(stations), team_initial_scores)
+names(scoresheet)[4:ncol(scoresheet)] = team_columns_names
 
 ui <- navbarPage(
   title = "Metropoly game",
@@ -72,7 +70,7 @@ server <- function(input, output) {
   
   # This is the map
   points <- eventReactive(input$recalc, {
-    cbind(rnorm(40) * 2, rnorm(40) + 6)
+    stations
   }, ignoreNULL = FALSE)
   output$mymap <- renderLeaflet({
     leaflet() %>%
