@@ -75,8 +75,8 @@ ui <- fluidPage(
   selectInput(
     inputId = "ScoredBonous",
     label = "Select a Bonous type",
-    choices = Bonus_list,
-    selected = Bonus_list[1]
+    choices = BonusName,
+    selected = BonusName[1]
   ),
 
   submitButton(text = "Submit")),
