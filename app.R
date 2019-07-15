@@ -59,25 +59,37 @@ ui <- fluidPage(
                    "Group B" = 2),
     selected = 1
   ),
+  
+  selectInput(
+    inputId = "Logtype",
+    label = "Chose the score type",
+    choices = c("Station",
+                   "Destination",
+                   "Bonus Point"
+                   ),
+    selected = 1
+  ),
+  submitButton(text = "Submit"),
+  
   h3("Log your score"),
   selectInput(
-    inputId = "VisitStation",
+    inputId = "PointSource",
     label = "Select the STATION you visited",
     choices = StationName,
     selected = StationName[1]
   ),
-  selectInput(
-    inputId ="VisitDest",
-    label = "Select the DESTINATION you visited",
-    choice = DestName,
-    selected = DestName[1]
-  ),
-  selectInput(
-    inputId = "ScoredBonous",
-    label = "Select a Bonous type",
-    choices = BonusName,
-    selected = BonusName[1]
-  ),
+ # selectInput(
+  #  inputId ="VisitDest",
+   # label = "Select the DESTINATION you visited",
+    #choice = DestName,
+     #selected = DestName[1]
+  #),
+  #selectInput(
+   # inputId = "ScoredBonous",
+    #label = "Select a Bonous type",
+    #choices = BonusName,
+    #selected = BonusName[1]
+  #),
 
   submitButton(text = "Submit")),
   
@@ -159,12 +171,38 @@ ui <- fluidPage(
   
     ))))
 
-server <- function(input, output) {
+server <- function(input, output, session) {
   # If we get the scores from Google Sheets:
   # scoresheet = function_to_read_from_google_sheets()
   output$shiny_teamname = renderText(paste("Team Name:",input$teamname))
   output$shiny_group = renderText(group_list[as.numeric(input$Group)])
   output$shiny_scoresheet = renderTable(scoresheet[c(names(scoresheet)[1:2], paste0("team_",input$teamname,"_group_",groups))])
+  
+  #Update the contents of slide bar based on the score type 
+  observe({
+    ScoreType <- input$Logtype
+    print(input$Logtype)
+    if (ScoreType == "Station") 
+        {updateSelectInput(session,"PointSource",
+                      label = "Select the STATION you visited",
+                      choices = StationName,
+                      selected = StationName[1]
+    )}
+    else if (ScoreType == "Destination")
+     {updateSelectInput(session,"PointSource",
+                       label = "Select the DESTINATION you visited",
+                       choices = DestName,
+                       selected = DestName[1])}
+    
+    else if (ScoreType == "Bonus Point")
+    {updateSelectInput(session,"PointSource",
+                       label = "Select the Bonus type",
+                       choices = BonusName,
+                       selected = BonusName[1])}
+      
+  })
+  
+ 
   
   # This is the map
   points <- eventReactive(input$recalc, {
