@@ -159,6 +159,15 @@ ui <- fluidPage(
     title = "Team scoring tab",
     shiny::textOutput("shiny_teamname"),
     shiny::textOutput("shiny_group"),
+    h3("Log your score"),
+    selectInput(
+      inputId = "PointSource",
+      label = "Select the STATION you visited",
+      choices = StationName,
+      selected = StationName[1]
+    ),
+    
+    submitButton(text = "Submit"),
     shiny::tableOutput("shiny_scoresheet")
   ),
   tabPanel(title = "Leader board"),
