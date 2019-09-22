@@ -45,140 +45,55 @@ ui <- fluidPage(
   sidebarLayout(
     sidebarPanel( 
       h3("Select your team"),
-    selectInput(
-    inputId = "teamname",
-    label = "Team name",
-    choices = team_names,
-    selected = team_names[1]
-  ),
- 
-  radioButtons(
-    inputId = "Group",
-    label = "Your group",
-    choices = list("Group A" = 1,
-                   "Group B" = 2),
-    selected = 1
-  ),
-  
-  selectInput(
-    inputId = "Logtype",
-    label = "Chose the score type",
-    choices = c("Station",
-                   "Destination",
-                   "Bonus Point"
-                   ),
-    selected = 1
-  ),
-  submitButton(text = "Submit"),
-  
-  h3("Log your score"),
-  selectInput(
-    inputId = "PointSource",
-    label = "Select the STATION you visited",
-    choices = StationName,
-    selected = StationName[1]
-  ),
- # selectInput(
-  #  inputId ="VisitDest",
-   # label = "Select the DESTINATION you visited",
-    #choice = DestName,
-     #selected = DestName[1]
-  #),
-  #selectInput(
-   # inputId = "ScoredBonous",
-    #label = "Select a Bonous type",
-    #choices = BonusName,
-    #selected = BonusName[1]
-  #),
-
-  submitButton(text = "Submit")),
-  
-  mainPanel(
-  tabsetPanel(
-  tabPanel(
-    title = "Game rules",
-    h1("How to play Metropoly game "),
-    h2("The objective of the game"),
-    p(
-      "The object of the game is to get the highest points score possible. Teams will score points by either travelling on trains through stations, or by visiting named destinations across West Yorkshire"
-    ),
-    h2("Rules"),
-    tags$li(
-      "Teams may only use three travel modes: train, bus and walking. Cycling is not allowed in this game, nor is using a private car or taxi."
-    ),
-    tags$li(
-      "Teams may split into a maximum of two groups when travelling around the area."
-    ),
-    tags$li(
-      "All points scored will be awarded to the team as a whole and not to the individual group which scored them."
-    ),
-    tags$li(
-      "To score points for a named destination from the destination list the group must visit it and take a photograph as evidence. Please see the destination list for the specifics of what needs to be captured in the photograph. Each photograph MUST also include in it at least one member of the group."
-    ),
-    tags$li(
-      "To score points for a station the group must be on a train that departs from the station, arrives at the station, or stops at the station. A log of all trains used by the group must be submitted as evidence that they have visited the stations they have travelled through."
-    ),
-    tags$li(
-      "Points may only be scored once for each destination and station that is visited. This means that if both groups within a team visit the same destination/station but at different times of the day, the points for the visit by the second group won’t count."
-    ),
-    tags$li(
-      "Each group within a team must visit at least one destination that is accessible only by bus; these are highlighted in green on your scorecard and destination list sheets. If a group does not visit such a destination then they will receive a penalty of -1000 points"
-    ),
-    tags$li(
-      "Grand Central operates an express service (each way) between Bradford Interchange and London. This service represents a quick way to get from one side of the Metro card area to the other and any team that uses it will receive +500 bonus points (but remember to get off at Pontefract Monkhill)"
-    ),
-    tags$li(
-      "Teams may get a bonus of +1,000 points if they are lucky enough to spot the two roving representatives of ITS (Anna and Haruko) who will be travelling about the area whilst the game is operating. Photographic evidence of the team with the representatives is required."
-    ),
-    tags$li(
-      "Teams may get a bonus of +1,000 points if they are lucky enough to spot and photograph the station cat, Felix, at Huddersfield Station. Felix is famous and has his own Facebook page https://www.facebook.com/Felix-the-Huddersfield-Station-Cat-107081156301541/"
-    ),
-    tags$li(
-      "The starting point for the game will be the garden in front of the ITS building. Teams may not depart before the official starting time of 9:15."
-    ),
-    tags$li(
-      "Teams should return to ITS by 16:00. The finishing point for the game will be the Entrance Doors to the ITS building. As each team returns it will be officially clocked in and their finishing time recorded. An additional 5 points per minute will be scored for teams that arrive back before 16:00, but 100 points per minute will be deducted for teams which arrive back after 16:00."
-    ),
-    tags$li(
-      "Teams will only count as having returned when both groups making up the team are back at ITS.
-      "
-    ),
-    h2("Twitter update"),
-    p(
-      "Annoy and intimidate your rival groups by tweeting pictures of each point scoring destination you arrive at to the hashtag #ITSmetropoly.
-      We’ll be looking at the twitter feed during the day and highlighting/promoting any particularly funny/good comments and photos.
-      "
-    ),
-    h1("Advices"),
-    tags$li("Plan your route in advance. Although finding out about trains whilst on the move is relatively easy, it is much harder to determine which bus to take and even whether a bus service to a specific destination is available."),
-    
-    h1("Resources")
-    ),
-  tabPanel(
-    h1("Your current score"),
-    title = "Team scoring tab",
-    shiny::textOutput("shiny_teamname"),
-    shiny::textOutput("shiny_group"),
-    h3("Log your score"),
-    selectInput(
-      inputId = "PointSource",
-      label = "Select the STATION you visited",
-      choices = StationName,
-      selected = StationName[1]
+      selectInput(
+        inputId = "teamname",
+        label = "Team name",
+        choices = team_names,
+        selected = team_names[1]
+      ),
+      
+      radioButtons(
+        inputId = "Group",
+        label = "Your group",
+        choices = list("Group A" = 1,
+                       "Group B" = 2),
+        selected = 1
+      ),
+      
+      submitButton(text = "Submit")
     ),
     
-    submitButton(text = "Submit"),
-    shiny::tableOutput("shiny_scoresheet")
-  ),
-  tabPanel(title = "Leader board"),
-  tabPanel(
-    title = "Maps",
-    leafletOutput("mymap"),
-    p(),
-    actionButton("recalc", "New points")
-  )
-  
-    ))))
+    mainPanel(
+      tabsetPanel(
+        tabPanel(
+          h1("Your current score"),
+          title = "Team scoring tab",
+          shiny::textOutput("shiny_teamname"),
+          shiny::textOutput("shiny_group"),
+          
+          h3("Log your score")
+          #selectInput(
+           # inputId = "PointSource",
+            #label = "Select the STATION you visited",
+            #choices = StationName,
+            #choices = list("Station" = StationName,
+             #              "Destination" = DestName,
+              #             "Bonus" = BonusName),
+            #selected = StationName[1]
+          #),
+          
+          #submitButton(text = "Submit"),
+          #shiny::tableOutput("shiny_scoresheet")
+        ),
+        tabPanel(title = "Leader board"),
+        tabPanel(
+          title = "Maps",
+          leafletOutput("mymap"),
+          p(),
+          actionButton("recalc", "New points")
+        )
+        
+      ))))
 
 server <- function(input, output, session) {
   # If we get the scores from Google Sheets:
@@ -192,13 +107,13 @@ server <- function(input, output, session) {
     ScoreType <- input$Logtype
     print(input$Logtype)
     if (ScoreType == "Station") 
-        {updateSelectInput(session,"PointSource",
-                      label = "Select the STATION you visited",
-                      choices = StationName,
-                      selected = StationName[1]
+    {updateSelectInput(session,"PointSource",
+                       label = "Select the STATION you visited",
+                       choices = StationName,
+                       selected = StationName[1]
     )}
     else if (ScoreType == "Destination")
-     {updateSelectInput(session,"PointSource",
+    {updateSelectInput(session,"PointSource",
                        label = "Select the DESTINATION you visited",
                        choices = DestName,
                        selected = DestName[1])}
@@ -208,10 +123,10 @@ server <- function(input, output, session) {
                        label = "Select the Bonus type",
                        choices = BonusName,
                        selected = BonusName[1])}
-      
+    
   })
   
- 
+  
   
   # This is the map
   points <- eventReactive(input$recalc, {
