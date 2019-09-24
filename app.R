@@ -42,11 +42,11 @@ station_vector = rep(0, nrow(stations))
 dest_vector = rep (0, nrow(DestName))
 bonus_vector = rep(0,nrow(BonusName))
 
-# test scoring: group 2 has scored in station 1, 3 has scored in 1 and 2
 repl_station_vecotr = replicate(length(team_columns_names), station_vector)
 repl_dest_vector = replicate(length(team_columns_names),dest_vector)
 repl_bonus_vector = replicate(length(team_columns_names),bonus_vector)
 
+# test scoring: group 2 has scored in station 1, 3 has scored in 1 and 2
 #team_initial_scores[1, 2] = 1
 #team_initial_scores[1:2, 3] = 1
 
@@ -59,6 +59,10 @@ names(scoresheet_dest)[3:ncol(scoresheet_dest)] =team_columns_names
 #Create socre sheet for bonus 
 scoresheet_bonus = cbind(bonus,repl_bonus_vector) 
 names(scoresheet_bonus)[3:ncol(scoresheet_bonus)] =team_columns_names
+
+#Create score summary 
+scoresum <- team_columns_names
+dim(scoresum) = c(length(scoresum),1);scoresum
 
 ui <- fluidPage(
   headerPanel(tags$img(src = "Metropoly_Logo.png")),
@@ -100,14 +104,19 @@ ui <- fluidPage(
           h4(shiny::textOutput("shiny_teamname")),
           h4(shiny::textOutput("shiny_group")),
           
-          h2("Current score summary"),
+          h2("Your score summary"),
           #Summary talbe for each cateogry 
           shiny::textOutput("shiny_loggedScore"),
           shiny::tableOutput("shiny_scoresheet_st"),
           shiny::tableOutput("shiny_scoresheet_dest"),
           shiny::tableOutput("shiny_scoresheet_bonus")
         ),
-        tabPanel(title = "Leader board"),
+        tabPanel(
+          title = "Leader board",
+          h2("Current score")
+          #Put table 
+          
+          ),
         tabPanel(
           title = "Maps",
           leafletOutput("mymap"),
