@@ -233,6 +233,7 @@ server <- function(input, output, session) {
     nrow_sumscore<- which (scoresum  == input$teamname) 
     scoresum[nrow_sumscore,"Total"]<<-sum(as.numeric(scoresum[nrow_sumscore,2:4]))
     #update current ranking based on the total score
+    
     output$shiny_scorerank = renderTable(scorerank)
   })
   
