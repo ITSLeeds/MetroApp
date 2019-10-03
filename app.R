@@ -164,8 +164,8 @@ server <- function(input, output, session) {
   # scoresheet = function_to_read_from_google_sheets()
   output$shiny_teamname = renderText(paste("Team:",input$teamname))
   output$shiny_group = renderText(paste("Group",group_list[as.numeric(input$Group)]))
-  output$shiny_scoresum = renderTable(scoresum)
-  output$shiny_scorerank = renderTable(scorerank)
+  output$shiny_scoresum = renderTable(scoresum, digits = 0)
+  output$shiny_scorerank = renderTable(scorerank, digits = 0)
   
   #update the data set table
   observeEvent(input$log,{
@@ -178,13 +178,13 @@ server <- function(input, output, session) {
       log_row = which(scoresheet_station == LogScore)
       #Update score table 
       scoresheet_station[log_row,log_col]<<- 1
-      output$shiny_scoresheet_st = renderTable(scoresheet_station[c(names(scoresheet_station)[1:2], paste0("team_",input$teamname,"_",group_list))])
+      output$shiny_scoresheet_st = renderTable(scoresheet_station[c(names(scoresheet_station)[1:2], paste0("team_",input$teamname,"_",group_list))], digits = 0)
       #Calcurate the score 
       scoresheet_station[log_row,paste0("team_",input$teamname,"_Total")]<<-scoresheet_station[log_row,"Points"]
       #Update the total score table 
       sumlog_row = which (scoresum == input$teamname)
       scoresum[sumlog_row,"Station"]<<-sum(scoresheet_station[,paste0("team_",input$teamname,"_Total")])
-      output$shiny_scoresum = renderTable(scoresum)
+      output$shiny_scoresum = renderTable(scoresum, digits = 0)
     }
     #Log Destination socre
     else if  (any(scoresheet_dest == LogScore) == TRUE)
@@ -192,14 +192,14 @@ server <- function(input, output, session) {
       log_row = which(scoresheet_dest == LogScore)
       #Update scoresheet 
       scoresheet_dest[log_row,log_col]<<- 1
-      output$shiny_scoresheet_dest = renderTable(scoresheet_dest[c(names(scoresheet_dest)[1:2], paste0("team_",input$teamname,"_",group_list))])
+      output$shiny_scoresheet_dest = renderTable(scoresheet_dest[c(names(scoresheet_dest)[1:2], paste0("team_",input$teamname,"_",group_list))], digits = 0)
      
       #Calculate the score 
       scoresheet_dest[log_row,paste0("team_",input$teamname,"_Total")]<<-scoresheet_dest[log_row,"Score"]      
       #Update the total socre table
       sumlog_row = which (scoresum == input$teamname)
       scoresum[sumlog_row,"Destination"]<<-sum(scoresheet_dest[,paste0("team_",input$teamname,"_Total")])
-      output$shiny_scoresum = renderTable(scoresum)
+      output$shiny_scoresum = renderTable(scoresum, digits = 0)
       
       #Check whether team visited bus only stop 
       if (any(BusOnlyDest == LogScore))
@@ -207,11 +207,11 @@ server <- function(input, output, session) {
         #Calculate the bonus 
        scoresheet_bonus[VBO_row,paste0("team_",input$teamname,"_Total")] <<-
          scoresheet_bonus[VBO_row,paste0("team_",input$teamname,"_A")]*1000 +scoresheet_bonus[VBO_row,paste0("team_",input$teamname,"_B")]*1000-2000
-      output$shiny_scoresheet_bonus = renderTable(scoresheet_bonus[c(names(scoresheet_bonus)[1:2], paste0("team_",input$teamname,"_",group_list))])
+      output$shiny_scoresheet_bonus = renderTable(scoresheet_bonus[c(names(scoresheet_bonus)[1:2], paste0("team_",input$teamname,"_",group_list))], digits = 0)
       #Update the total socre table 
       sumlog_row = which (scoresum == input$teamname)
       scoresum[sumlog_row,"Bonus"]<<-sum(scoresheet_bonus[,paste0("team_",input$teamname,"_Total")])
-      output$shiny_scoresum = renderTable(scoresum)
+      output$shiny_scoresum = renderTable(scoresum, digits = 0)
       }
       }
     #Log Bonus Score
@@ -220,21 +220,21 @@ server <- function(input, output, session) {
       log_row = which(scoresheet_bonus == LogScore)
       #Update socresheet  
       scoresheet_bonus[log_row,log_col]<<- 1
-      output$shiny_scoresheet_bonus = renderTable(scoresheet_bonus[c(names(scoresheet_bonus)[1:2], paste0("team_",input$teamname,"_",group_list))])
+      output$shiny_scoresheet_bonus = renderTable(scoresheet_bonus[c(names(scoresheet_bonus)[1:2], paste0("team_",input$teamname,"_",group_list))], digits = 0)
       
       #Calcurate Bonus score 
       scoresheet_bonus[log_row,paste0("team_",input$teamname,"_Total")]<<-scoresheet_bonus[log_row,"Score"]      
       #Update the total socre table 
       sumlog_row = which (scoresum == input$teamname)
       scoresum[sumlog_row,"Bonus"]<<-sum(scoresheet_bonus[,paste0("team_",input$teamname,"_Total")])
-      output$shiny_scoresum = renderTable(scoresum)
+      output$shiny_scoresum = renderTable(scoresum, digits = 0)
     }
     #Update a total score for each group 
     nrow_sumscore<- which (scoresum  == input$teamname) 
     scoresum[nrow_sumscore,"Total"]<<-sum(as.numeric(scoresum[nrow_sumscore,2:4]))
     #update current ranking based on the total score
     
-    output$shiny_scorerank = renderTable(scorerank)
+    output$shiny_scorerank = renderTable(scorerank, digits = 0)
   })
   
   
