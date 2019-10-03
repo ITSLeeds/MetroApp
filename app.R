@@ -97,6 +97,7 @@ scorerank[,2]=team_names
 
 
 ui <- fluidPage(
+  titlePanel(title = "", windowTitle = "MetroApp"),
   headerPanel(tags$img(src = "Metropoly_Logo.png")),
   sidebarLayout(
     sidebarPanel( 
