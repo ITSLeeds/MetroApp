@@ -8,7 +8,7 @@ library(leaflet)
 # minimum data needed for game --------------------------------------------
 
 #added two groups to each team
-team_names = c("Haruko","Andrew","Robin") #1:3 
+team_names =  c("Haruko","Andrew","Robin") #1:16
 #Group numeric 
 groups = 1:3
 #Group list
@@ -82,8 +82,10 @@ scoresheet_bonus[VBO_row,paste0("team_",team_names,"_Total")] <- -2000
 
 #Create score summary 
 scoresum_vector <- rep(0,length(team_names))
-scoresum = replicate(5,scoresum_vector)
+repl_scoresum_Vector= replicate(4,scoresum_vector)
+scoresum <- data.frame(team_names,repl_scoresum_Vector)
 colnames(scoresum) = c("Team name","Station","Destination","Bonus","Total")
+
 scoresum[,1] = team_names
 scoresum[,"Bonus"] <- -2000
 
@@ -93,8 +95,6 @@ scorerank = replicate(2,scorerank_vector)
 colnames(scorerank) = c("Rank","Team name")
 scorerank[,1]=1:length(team_names)
 scorerank[,2]=team_names
-
-
 
 ui <- fluidPage(
   titlePanel(title = "", windowTitle = "MetroApp"),
@@ -133,15 +133,19 @@ ui <- fluidPage(
       tabsetPanel(
         tabPanel(
           title = "Your team score",
-          h2("Your are"),
+          h3("Your are"),
           h4(shiny::textOutput("shiny_teamname")),
           h4(shiny::textOutput("shiny_group")),
           
-          h2("Your score summary"),
+          h3("Your score summary"),
           #Summary talbe for each cateogry 
+          shiny::tableOutput("shiny_groupscore"),
+          
+          h3("Visited stations/destinations"),
+          
           shiny::textOutput("shiny_loggedScore"),
-          shiny::tableOutput("shiny_scoresheet_st"),
-          shiny::tableOutput("shiny_scoresheet_dest"),
+          shiny::tableOutput("shiny_visited_st"),
+          shiny::tableOutput("shiny_visited_dest"),
           shiny::tableOutput("shiny_scoresheet_bonus")
         ),
         tabPanel(
@@ -150,13 +154,13 @@ ui <- fluidPage(
           shiny::tableOutput("shiny_scorerank"),
           h3("Current score summary"),
           shiny::tableOutput("shiny_scoresum")
-        ),
-        tabPanel(
-          title = "Maps",
-          leafletOutput("mymap"),
-          p(),
-          actionButton("recalc", "New points")
-        )
+        )#,
+        #tabPanel(
+        #  title = "Maps",
+        #  leafletOutput("mymap"),
+        #  p(),
+        #  actionButton("recalc", "New points")
+        #)
         
       ))))
 
@@ -167,6 +171,14 @@ server <- function(input, output, session) {
   output$shiny_group = renderText(paste("Group",group_list[as.numeric(input$Group)]))
   output$shiny_scoresum = renderTable(scoresum, digits = 0)
   output$shiny_scorerank = renderTable(scorerank, digits = 0)
+  output$shiny_groupscore = renderTable (scoresum[scoresum[,colnames(scoresum)[1]] == input$teamname,], digits = 0)
+  
+  #list of visited places
+  output$shiny_visited_st = renderTable(scoresheet_station[scoresheet_station[,paste0("team_",input$teamname,"_Total")]>0,c(names(scoresheet_station)[1:2], paste0("team_",input$teamname,"_",group_list))])
+  output$shiny_visited_dest = renderTable(scoresheet_dest[scoresheet_dest[,paste0("team_",input$teamname,"_Total")]>0,c(names(scoresheet_dest)[1:2], paste0("team_",input$teamname,"_",group_list))])
+
+  #Bonus is always showen
+  output$shiny_scoresheet_bonus = renderTable(scoresheet_bonus[c(names(scoresheet_bonus)[1:2], paste0("team_",input$teamname,"_",group_list))], digits = 0)
   
   #update the data set table
   observeEvent(input$log,{
@@ -179,13 +191,17 @@ server <- function(input, output, session) {
       log_row = which(scoresheet_station == LogScore)
       #Update score table 
       scoresheet_station[log_row,log_col]<<- 1
-      output$shiny_scoresheet_st = renderTable(scoresheet_station[c(names(scoresheet_station)[1:2], paste0("team_",input$teamname,"_",group_list))], digits = 0)
       #Calcurate the score 
       scoresheet_station[log_row,paste0("team_",input$teamname,"_Total")]<<-scoresheet_station[log_row,"Points"]
+      
+      #Show the list of stations they visited 
+      output$shiny_visited_st = renderTable(scoresheet_station[scoresheet_station[,paste0("team_",input$teamname,"_Total")]>0,c(names(scoresheet_station)[1:2], paste0("team_",input$teamname,"_",group_list))])
+      
       #Update the total score table 
       sumlog_row = which (scoresum == input$teamname)
       scoresum[sumlog_row,"Station"]<<-sum(scoresheet_station[,paste0("team_",input$teamname,"_Total")])
       output$shiny_scoresum = renderTable(scoresum, digits = 0)
+      
     }
     #Log Destination socre
     else if  (any(scoresheet_dest == LogScore) == TRUE)
@@ -193,10 +209,14 @@ server <- function(input, output, session) {
       log_row = which(scoresheet_dest == LogScore)
       #Update scoresheet 
       scoresheet_dest[log_row,log_col]<<- 1
-      output$shiny_scoresheet_dest = renderTable(scoresheet_dest[c(names(scoresheet_dest)[1:2], paste0("team_",input$teamname,"_",group_list))], digits = 0)
-     
+      
       #Calculate the score 
       scoresheet_dest[log_row,paste0("team_",input$teamname,"_Total")]<<-scoresheet_dest[log_row,"Score"]      
+      
+      #Show the list of destination they visited 
+      output$shiny_visited_dest = renderTable(scoresheet_dest[scoresheet_dest[,paste0("team_",input$teamname,"_Total")]>0,c(names(scoresheet_dest)[1:2], paste0("team_",input$teamname,"_",group_list))])
+      
+      
       #Update the total socre table
       sumlog_row = which (scoresum == input$teamname)
       scoresum[sumlog_row,"Destination"]<<-sum(scoresheet_dest[,paste0("team_",input$teamname,"_Total")])
@@ -240,15 +260,15 @@ server <- function(input, output, session) {
   
   
   # This is the map
-  points <- eventReactive(input$recalc, {
-    stations
-  }, ignoreNULL = FALSE)
-  output$mymap <- renderLeaflet({
-    leaflet() %>%
-      addProviderTiles(providers$Stamen.TonerLite,
-                       options = providerTileOptions(noWrap = TRUE)) %>%
-      addMarkers(data = points())
-  })
+ # points <- eventReactive(input$recalc, {
+  #  stations
+  #}, ignoreNULL = FALSE)
+  #output$mymap <- renderLeaflet({
+   # leaflet() %>%
+    #  addProviderTiles(providers$Stamen.TonerLite,
+    #                   options = providerTileOptions(noWrap = TRUE)) %>%
+    #  addMarkers(data = points())
+  #})
 }
 
 shinyApp(ui = ui, server = server)
