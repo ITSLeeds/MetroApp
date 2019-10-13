@@ -8,7 +8,7 @@ library(leaflet)
 # minimum data needed for game --------------------------------------------
 
 #added two groups to each team
-team_names =  c("Haruko","Andrew","Robin") #1:16
+team_names =  1:16 #c("Haruko","Andrew","Robin") 
 #Group numeric 
 groups = 1:3
 #Group list
@@ -90,14 +90,6 @@ scoresum[,1] = team_names
 scoresum[,"Bonus"] <- -2000
 scoresum[,"Total"] <- -2000
 
-
-#Create a ranking summary
-scorerank_vector <- rep(0,length(team_names))
-scorerank = replicate(2,scorerank_vector)
-colnames(scorerank) = c("Rank","Team name")
-scorerank[,1]=1:length(team_names)
-scorerank[,2]=team_names
-
 ui <- fluidPage(
   titlePanel(title = "", windowTitle = "MetroApp"),
   headerPanel(tags$img(src = "Metropoly_Logo.png")),
@@ -153,8 +145,6 @@ ui <- fluidPage(
         ),
         tabPanel(
           title = "Leader board",
-          h3("Current ranking "),
-          shiny::tableOutput("shiny_scorerank"),
           h3("Current score summary"),
           shiny::tableOutput("shiny_scoresum")
         )#,
@@ -263,9 +253,7 @@ server <- function(input, output, session) {
     #Update a total score for each group 
     nrow_sumscore<- which (scoresum  == input$teamname) 
     scoresum[nrow_sumscore,"Total"]<<-sum(as.numeric(scoresum[nrow_sumscore,2:4]))
-    #update current ranking based on the total score
-    
-    output$shiny_scorerank = renderTable(scorerank, digits = 0)
+
   })
   
   #Delete a score when "delete" button is hit
@@ -353,11 +341,7 @@ server <- function(input, output, session) {
     #Update a total score for each group 
     nrow_sumscore<- which (scoresum  == input$teamname) 
     scoresum[nrow_sumscore,"Total"]<<-sum(as.numeric(scoresum[nrow_sumscore,2:4]))
-    #update current ranking based on the total score
-    
-    output$shiny_scorerank = renderTable(scorerank, digits = 0)
   })
-  
   
   # This is the map
  # points <- eventReactive(input$recalc, {
