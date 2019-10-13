@@ -8,7 +8,7 @@ library(leaflet)
 # minimum data needed for game --------------------------------------------
 
 #added two groups to each team
-team_names =  1:16 #c("Haruko","Andrew","Robin") 
+team_names = c("Haruko","Andrew","Robin") #1:16 
 #Group numeric 
 groups = 1:3
 #Group list
@@ -196,6 +196,9 @@ server <- function(input, output, session) {
       output$shiny_scoresum = renderTable(scoresum, digits = 0)
       output$shiny_groupscore = renderTable (scoresum[scoresum[,colnames(scoresum)[1]] == input$teamname,], digits = 0)
       
+      #Track the output 
+      Travel_log = c(input$teamname, input$Group, input$PointScore, "Log",format(Sys.time(), "%m/%d/%y %H:%M:%OS3"))
+      write.table(Travel_log, "Travel_log.csv", append = TRUE, col.names = F,row.names = F)
     }
     #Log Destination socre
     else if  (any(scoresheet_dest == LogScore) == TRUE)
@@ -253,7 +256,6 @@ server <- function(input, output, session) {
     #Update a total score for each group 
     nrow_sumscore<- which (scoresum  == input$teamname) 
     scoresum[nrow_sumscore,"Total"]<<-sum(as.numeric(scoresum[nrow_sumscore,2:4]))
-
   })
   
   #Delete a score when "delete" button is hit
@@ -281,6 +283,9 @@ server <- function(input, output, session) {
       output$shiny_scoresum = renderTable(scoresum, digits = 0)
       output$shiny_groupscore = renderTable (scoresum[scoresum[,colnames(scoresum)[1]] == input$teamname,], digits = 0)
       
+      #Track the output 
+      Travel_log = c(input$teamname, input$Group, input$PointScore, "Delete",format(Sys.time(),"%m/%d/%y %H:%M:%OS3"))
+      write.table(Travel_log, "Travel_log.csv", append = TRUE, col.names = F,row.names = F)
     }
     #Log Destination socre
     else if  (any(scoresheet_dest == LogScore) == TRUE)
