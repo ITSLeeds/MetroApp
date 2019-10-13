@@ -219,7 +219,9 @@ server <- function(input, output, session) {
       scoresum[sumlog_row,"Destination"]<<-sum(scoresheet_dest[,paste0("team_",input$teamname,"_Total")])
       output$shiny_scoresum = renderTable(scoresum, digits = 0)
       output$shiny_groupscore = renderTable (scoresum[scoresum[,colnames(scoresum)[1]] == input$teamname,], digits = 0)
-      
+      #Track the output 
+      Travel_log = c(input$teamname, input$Group, input$PointScore, "Delete",format(Sys.time(),"%m/%d/%y %H:%M:%OS3"))
+      write.table(Travel_log, "Travel_log.csv", append = TRUE, col.names = F,row.names = F)
       
       #Check whether team visited bus only stop 
       if (any(BusOnlyDest == LogScore))
@@ -307,6 +309,10 @@ server <- function(input, output, session) {
       scoresum[sumlog_row,"Destination"]<<-sum(scoresheet_dest[,paste0("team_",input$teamname,"_Total")])
       output$shiny_scoresum = renderTable(scoresum, digits = 0)
       output$shiny_groupscore = renderTable (scoresum[scoresum[,colnames(scoresum)[1]] == input$teamname,], digits = 0)
+      
+      #Track the output 
+      Travel_log = c(input$teamname, input$Group, input$PointScore, "Delete",format(Sys.time(),"%m/%d/%y %H:%M:%OS3"))
+      write.table(Travel_log, "Travel_log.csv", append = TRUE, col.names = F,row.names = F)
       
       #Check whether team visited bus only stop 
       if (any(BusOnlyDest == LogScore))
