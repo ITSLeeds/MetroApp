@@ -209,7 +209,7 @@ server <- function(input, output, session) {
       scoresheet_station[log_row,log_col]<<- 1
       #Calcurate the score 
       scoresheet_station[log_row,paste0("team_",input$teamname,"_Total")]<<-scoresheet_station[log_row,"Points"]
-      write.csv(scoresheet_station, "scoresheet_station_updated.csv", row.names = FALSE)
+      #write.csv(scoresheet_station, "scoresheet_station_updated.csv", row.names = FALSE)
       
       #Show the list of stations they visited 
       output$shiny_visited_st = renderTable(scoresheet_station[scoresheet_station[,paste0("team_",input$teamname,"_Total")]>0,c(names(scoresheet_station)[1:2], paste0("team_",input$teamname,"_",group_list))])
