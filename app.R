@@ -34,6 +34,14 @@ DestName$Score <-NULL
 BusOnlyDest <- read.csv("BusOnlyDest.csv")
 BusOnlyDest$Score <- NULL
 
+#Read Bonus scoresheet
+bonus = read.csv("Bonus.csv")
+colnames(bonus)<- c("Bonus","Score")
+#Create Bonus name list 
+BonusName = bonus [1:4,]
+BonusName$Score <-NULL
+
+
 #Create/load station scoresheet
 if(file.exists("scoresheet_station_updated.csv")){
   scoresheet_station <- readr::read_csv("scoresheet_station_updated.csv")
@@ -61,14 +69,11 @@ scoresheet_dest = cbind(destinations,repl_dest_vector)
 names(scoresheet_dest)[3:ncol(scoresheet_dest)] =team_columns_names
 }
 
-
-#Read Bonus scoresheet
-bonus = read.csv("Bonus.csv")
-colnames(bonus)<- c("Bonus","Score")
-#Create Bonus name list 
-BonusName = bonus [1:4,]
-BonusName$Score <-NULL
-
+#Create/load Bonus scoresheet
+if(file.exists("scoresheet_bonus_updated.csv")){
+  scoresheet_bonus <- readr::read_csv("scoresheet_bonus_updated.csv")
+  VBO_row = which (scoresheet_bonus == "Visit Bus only")
+}else{
 #Create score sheet for bonus point
 bonus_vector = rep(0,nrow(bonus))
 repl_bonus_vector = replicate(length(team_columns_names),bonus_vector)
@@ -77,6 +82,7 @@ scoresheet_bonus = cbind(bonus,repl_bonus_vector)
 names(scoresheet_bonus)[3:ncol(scoresheet_bonus)] =team_columns_names
 VBO_row = which (scoresheet_bonus == "Visit Bus only")
 scoresheet_bonus[VBO_row,paste0("team_",team_names,"_Total")] <- -2000
+}
 
 
 #Create/load score summary 
@@ -248,10 +254,12 @@ server <- function(input, output, session) {
       #Check whether team visited bus only stop 
       if (any(BusOnlyDest == LogScore))
       {scoresheet_bonus[VBO_row,log_col] <<-1
-        #Calculate the bonus 
-       scoresheet_bonus[VBO_row,paste0("team_",input$teamname,"_Total")] <<-
-         scoresheet_bonus[VBO_row,paste0("team_",input$teamname,"_A")]*1000 +scoresheet_bonus[VBO_row,paste0("team_",input$teamname,"_B")]*1000-2000
+      #Calculate the bonus 
+      scoresheet_bonus[VBO_row,paste0("team_",input$teamname,"_Total")] <<-
+        scoresheet_bonus[VBO_row,paste0("team_",input$teamname,"_A")]*1000 +scoresheet_bonus[VBO_row,paste0("team_",input$teamname,"_B")]*1000-2000
       output$shiny_scoresheet_bonus = renderTable(scoresheet_bonus[c(names(scoresheet_bonus)[1:2], paste0("team_",input$teamname,"_",group_list))], digits = 0)
+      write.csv(scoresheet_bonus, "scoresheet_bonus_updated.csv",row.names = FALSE)
+      
       #Update the total socre table 
       sumlog_row = which (scoresum == input$teamname)
       scoresum[sumlog_row,"Bonus"]<<-sum(scoresheet_bonus[,paste0("team_",input$teamname,"_Total")])
@@ -274,6 +282,7 @@ server <- function(input, output, session) {
       
       #Calcurate Bonus score 
       scoresheet_bonus[log_row,paste0("team_",input$teamname,"_Total")]<<-scoresheet_bonus[log_row,"Score"]      
+      write.csv(scoresheet_bonus, "scoresheet_bonus_updated.csv",row.names = FALSE)
       #Update the total socre table 
       sumlog_row = which (scoresum == input$teamname)
       scoresum[sumlog_row,"Bonus"]<<-sum(scoresheet_bonus[,paste0("team_",input$teamname,"_Total")])
@@ -352,9 +361,11 @@ server <- function(input, output, session) {
       #Check whether team visited bus only stop 
       if (any(BusOnlyDest == LogScore))
       {scoresheet_bonus[VBO_row,log_col] <<- 0
+      write.csv(scoresheet_bonus, "scoresheet_bonus_updated.csv",row.names = FALSE)
       #Calculate the bonus 
       scoresheet_bonus[VBO_row,paste0("team_",input$teamname,"_Total")] <<-
         scoresheet_bonus[VBO_row,paste0("team_",input$teamname,"_A")]*1000 +scoresheet_bonus[VBO_row,paste0("team_",input$teamname,"_B")]*1000-2000
+      write.csv(scoresheet_bonus, "scoresheet_bonus_updated.csv",row.names = FALSE)
       output$shiny_scoresheet_bonus = renderTable(scoresheet_bonus[c(names(scoresheet_bonus)[1:2], paste0("team_",input$teamname,"_",group_list))], digits = 0)
       #Update the total socre table 
       sumlog_row = which (scoresum == input$teamname)
@@ -371,12 +382,14 @@ server <- function(input, output, session) {
       log_row = which(scoresheet_bonus == LogScore)
       #Update socresheet  
       scoresheet_bonus[log_row,log_col]<<- 0
-      output$shiny_scoresheet_bonus = renderTable(scoresheet_bonus[c(names(scoresheet_bonus)[1:2], paste0("team_",input$teamname,"_",group_list))], digits = 0)
+      write.csv(scoresheet_bonus, "scoresheet_bonus_updated.csv",row.names = FALSE)
+       output$shiny_scoresheet_bonus = renderTable(scoresheet_bonus[c(names(scoresheet_bonus)[1:2], paste0("team_",input$teamname,"_",group_list))], digits = 0)
       output$shiny_groupscore = renderTable (scoresum[scoresum[,colnames(scoresum)[1]] == input$teamname,], digits = 0)
       
       # Delete the score if other group has not scored 
       if (any(scoresheet_bonus[log_row, paste0("team_",input$teamname,"_",group_list[1:2])] == 1) == FALSE)
-      {scoresheet_bonus[log_row,paste0("team_",input$teamname,"_Total")]<<- 0}
+      {scoresheet_bonus[log_row,paste0("team_",input$teamname,"_Total")]<<- 0
+      write.csv(scoresheet_bonus, "scoresheet_bonus_updated.csv",row.names = FALSE)}
       
      #Update the total socre table 
       sumlog_row = which (scoresum == input$teamname)
