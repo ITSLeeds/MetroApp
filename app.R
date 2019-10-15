@@ -91,7 +91,13 @@ scoresum[,"Bonus"] <- -2000
 scoresum[,"Total"] <- -2000
 
 #Travle log 
-Travel_log <- data.frame (matrix(vector(), 0, 5, dimnames=list(c(), c("Team","Group","Log","Action","Time"))))
+if(file.exists("travel_log_updated.csv")) {
+  # starts from existing log
+  Travel_log <- readr::read_csv("travel_log_updated.csv") # write csv on interaction...
+} else {
+  Travel_log <- data.frame (matrix(vector(), 0, 5, dimnames=list(c(), c("Team","Group","Log","Action","Time"))))
+}
+
 
 ui <- fluidPage(
   titlePanel(title = "", windowTitle = "MetroApp"),
