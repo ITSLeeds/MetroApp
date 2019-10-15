@@ -125,7 +125,7 @@ ui <- fluidPage(
     ),
     
     mainPanel(
-      tabsetPanel(
+      #tabsetPanel(
         tabPanel(
           title = "Your team score",
           h3("Your are"),
@@ -142,11 +142,11 @@ ui <- fluidPage(
           shiny::tableOutput("shiny_visited_st"),
           shiny::tableOutput("shiny_visited_dest"),
           shiny::tableOutput("shiny_scoresheet_bonus")
-        ),
-        tabPanel(
-          title = "Leader board",
-          h3("Current score summary"),
-          shiny::tableOutput("shiny_scoresum")
+        )#,
+        #tabPanel(
+         # title = "Leader board",
+          #h3("Current score summary"),
+          #shiny::tableOutput("shiny_scoresum")
         )#,
         #tabPanel(
         #  title = "Maps",
@@ -155,7 +155,7 @@ ui <- fluidPage(
         #  actionButton("recalc", "New points")
         #)
         
-      ))))
+      ))#))
 
 server <- function(input, output, session) {
   # If we get the scores from Google Sheets:
