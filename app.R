@@ -125,7 +125,7 @@ ui <- fluidPage(
     ),
     
     mainPanel(
-      #tabsetPanel(
+      tabsetPanel(
         tabPanel(
           title = "Your team score",
           h3("Your are"),
@@ -142,12 +142,19 @@ ui <- fluidPage(
           shiny::tableOutput("shiny_visited_st"),
           shiny::tableOutput("shiny_visited_dest"),
           shiny::tableOutput("shiny_scoresheet_bonus")
-        )#,
-        #tabPanel(
-         # title = "Leader board",
+        ),
+        tabPanel(
+         title = "Download data",
+         # Input: Choose dataset ----
+         selectInput("dataset", "Choose a dataset:",
+                     choices = c("Score summary", "Station", "Destination","Bonus","Travel log")),
+         
+         # Button
+         downloadButton("downloadData", "Download")
+         
           #h3("Current score summary"),
           #shiny::tableOutput("shiny_scoresum")
-        )#,
+        )
         #tabPanel(
         #  title = "Maps",
         #  leafletOutput("mymap"),
@@ -155,7 +162,7 @@ ui <- fluidPage(
         #  actionButton("recalc", "New points")
         #)
         
-      ))#))
+      ))))
 
 server <- function(input, output, session) {
   # If we get the scores from Google Sheets:
@@ -353,6 +360,33 @@ server <- function(input, output, session) {
     nrow_sumscore<- which (scoresum  == input$teamname) 
     scoresum[nrow_sumscore,"Total"]<<-sum(as.numeric(scoresum[nrow_sumscore,2:4]))
   })
+  
+  ### download data 
+  # Reactive value for selected dataset ----
+  datasetInput <- reactive({
+    switch(input$dataset,
+           "Score summary" = scoresum,
+           "Station" = scoresheet_station,
+           "Destination" = scoresheet_dest,
+           "Bonus" = scoresheet_bonus,
+           "Travel log" = Travel_log
+           )
+  })
+  
+  # Table of selected dataset ----
+  #output$table <- renderTable({
+   # datasetInput()
+  #})
+  
+  # Downloadable csv of selected dataset ----
+  output$downloadData <- downloadHandler(
+    filename = function() {
+      paste(input$dataset, ".csv", sep = "")
+    },
+    content = function(file) {
+      write.csv(datasetInput(), file, row.names = FALSE)
+    }
+  )
   
   # This is the map
  # points <- eventReactive(input$recalc, {
