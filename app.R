@@ -23,9 +23,7 @@ colnames(Stationlist) <- c("Station","Points")
 #Create staiton name list
 StationName = Stationlist
 StationName$Points <- NULL
-#Creat station score list
-#StationScore = Stationlist
-#StationScore$Station <-NULL
+
 
 #Read destination scoresheet
 destinations = read.csv("Dest_Score.csv")
@@ -37,9 +35,6 @@ DestName$Score <-NULL
 BusOnlyDest <- read.csv("BusOnlyDest.csv")
 BusOnlyDest$Score <- NULL
 
-#Create destination score list 
-#DestScore = destinations 
-#DestScore$Destination <-NULL
 
 #Read Bonus scoresheet
 bonus = read.csv("Bonus.csv")
@@ -47,9 +42,6 @@ colnames(bonus)<- c("Bonus","Score")
 #Create Bonus name list 
 BonusName = bonus [1:4,]
 BonusName$Score <-NULL
-#Create Bonus score list 
-#BonusScore = bonus 
-#BonusScore$Bonus <- NULL
 
 # Idea: select team at the beginning
 # stations = readr::read_csv("stations.csv") # todo: create stations .csv with name and number points
@@ -64,10 +56,6 @@ repl_station_vecotr = replicate(length(team_columns_names), station_vector)
 repl_dest_vector = replicate(length(team_columns_names),dest_vector)
 repl_bonus_vector = replicate(length(team_columns_names),bonus_vector)
 
-# test scoring: group 2 has scored in station 1, 3 has scored in 1 and 2
-#team_initial_scores[1, 2] = 1
-#team_initial_scores[1:2, 3] = 1
-
 #Create score sheet for station
 scoresheet_station = cbind(sf::st_drop_geometry(stations), repl_station_vecotr)
 names(scoresheet_station)[4:ncol(scoresheet_station)] = team_columns_names
@@ -80,17 +68,19 @@ names(scoresheet_bonus)[3:ncol(scoresheet_bonus)] =team_columns_names
 VBO_row = which (scoresheet_bonus == "Visit Bus only")
 scoresheet_bonus[VBO_row,paste0("team_",team_names,"_Total")] <- -2000
 
-#Create score summary 
-scoresum_vector <- rep(0,length(team_names))
-repl_scoresum_Vector= replicate(4,scoresum_vector)
-scoresum <- data.frame(team_names,repl_scoresum_Vector)
-colnames(scoresum) = c("Team name","Station","Destination","Bonus","Total")
+#Create/load score summary 
+if(file.exists("scoresum_updated.csv")){
+  scoresum <- readr::read_csv("scoresum_updated.csv")
+}else{
+  scoresum_vector <- rep(0,length(team_names))
+  repl_scoresum_Vector= replicate(4,scoresum_vector)
+  scoresum <- data.frame(team_names,repl_scoresum_Vector)
+  colnames(scoresum) = c("Team name","Station","Destination","Bonus","Total")
+  scoresum[,1] = team_names
+  scoresum[,"Bonus"] <- -2000
+  scoresum[,"Total"] <- -2000}
 
-scoresum[,1] = team_names
-scoresum[,"Bonus"] <- -2000
-scoresum[,"Total"] <- -2000
-
-#Travle log 
+#Create/load Travle log 
 if(file.exists("travel_log_updated.csv")) {
   # starts from existing log
   Travel_log <- readr::read_csv("travel_log_updated.csv") # write csv on interaction...
@@ -211,10 +201,11 @@ server <- function(input, output, session) {
       scoresum[sumlog_row,"Station"]<<-sum(scoresheet_station[,paste0("team_",input$teamname,"_Total")])
       output$shiny_scoresum = renderTable(scoresum, digits = 0)
       output$shiny_groupscore = renderTable (scoresum[scoresum[,colnames(scoresum)[1]] == input$teamname,], digits = 0)
+      write.csv(scoresum, "scoresum_updated.csv", row.names = FALSE)
       
       #Track the output 
       Travel_log [dim(Travel_log)[1]+1,] <<- c(input$teamname, input$Group, input$PointScore, "Submit",format(Sys.time(), "%m/%d/%y %H:%M:%OS3"))
-     # write.table(Travel_log, "Travel_log.csv", append = TRUE, col.names = F,row.names = F)
+      write.csv(Travel_log, "travel_log_updated.csv",row.names = FALSE)
     }
     #Log Destination socre
     else if  (any(scoresheet_dest == LogScore) == TRUE)
@@ -235,12 +226,12 @@ server <- function(input, output, session) {
       scoresum[sumlog_row,"Destination"]<<-sum(scoresheet_dest[,paste0("team_",input$teamname,"_Total")])
       output$shiny_scoresum = renderTable(scoresum, digits = 0)
       output$shiny_groupscore = renderTable (scoresum[scoresum[,colnames(scoresum)[1]] == input$teamname,], digits = 0)
+      write.csv(scoresum, "scoresum_updated.csv", row.names = FALSE)
       
       #Track the output 
       Travel_log [dim(Travel_log)[1]+1,] <<- c(input$teamname,input$Group, input$PointScore, "Submit",format(Sys.time(), "%m/%d/%y %H:%M:%OS3")) 
-      #Travel_log = c(input$teamname, input$Group, input$PointScore, "Delete",format(Sys.time(),"%m/%d/%y %H:%M:%OS3"))
-      #write.table(Travel_log, "Travel_log.csv", append = TRUE, col.names = F,row.names = F)
-      
+      write.csv(Travel_log, "travel_log_updated.csv",row.names = FALSE)
+        
       #Check whether team visited bus only stop 
       if (any(BusOnlyDest == LogScore))
       {scoresheet_bonus[VBO_row,log_col] <<-1
@@ -253,6 +244,7 @@ server <- function(input, output, session) {
       scoresum[sumlog_row,"Bonus"]<<-sum(scoresheet_bonus[,paste0("team_",input$teamname,"_Total")])
       output$shiny_scoresum = renderTable(scoresum, digits = 0)
       output$shiny_groupscore = renderTable (scoresum[scoresum[,colnames(scoresum)[1]] == input$teamname,], digits = 0)
+      write.csv(scoresum, "scoresum_updated.csv", row.names = FALSE)
       
       }
       }
@@ -265,6 +257,7 @@ server <- function(input, output, session) {
       output$shiny_scoresheet_bonus = renderTable(scoresheet_bonus[c(names(scoresheet_bonus)[1:2], paste0("team_",input$teamname,"_",group_list))], digits = 0)
       #Track the output 
       Travel_log [dim(Travel_log)[1]+1,] <<- c(input$teamname, input$Group, input$PointScore, "Submit",format(Sys.time(), "%m/%d/%y %H:%M:%OS3")) 
+      write.csv(Travel_log, "travel_log_updated.csv",row.names = FALSE)
       
       #Calcurate Bonus score 
       scoresheet_bonus[log_row,paste0("team_",input$teamname,"_Total")]<<-scoresheet_bonus[log_row,"Score"]      
@@ -273,11 +266,12 @@ server <- function(input, output, session) {
       scoresum[sumlog_row,"Bonus"]<<-sum(scoresheet_bonus[,paste0("team_",input$teamname,"_Total")])
       output$shiny_scoresum = renderTable(scoresum, digits = 0)
       output$shiny_groupscore = renderTable (scoresum[scoresum[,colnames(scoresum)[1]] == input$teamname,], digits = 0)
-      
+      write.csv(scoresum, "scoresum_updated.csv", row.names = FALSE)
     }
     #Update a total score for each group 
     nrow_sumscore<- which (scoresum  == input$teamname) 
     scoresum[nrow_sumscore,"Total"]<<-sum(as.numeric(scoresum[nrow_sumscore,2:4]))
+    write.csv(scoresum, "scoresum_updated.csv", row.names = FALSE)
   })
   
   #Delete a score when "delete" button is hit
@@ -304,12 +298,12 @@ server <- function(input, output, session) {
       scoresum[sumlog_row,"Station"]<<-sum(scoresheet_station[,paste0("team_",input$teamname,"_Total")])
       output$shiny_scoresum = renderTable(scoresum, digits = 0)
       output$shiny_groupscore = renderTable (scoresum[scoresum[,colnames(scoresum)[1]] == input$teamname,], digits = 0)
+      write.csv(scoresum, "scoresum_updated.csv", row.names = FALSE)
       
       #Track the output 
       Travel_log [dim(Travel_log)[1]+1,] <<- c(input$teamname, input$Group, input$PointScore, "Delete",format(Sys.time(), "%m/%d/%y %H:%M:%OS3"))
-      #Travel_log = c(input$teamname, input$Group, input$PointScore, "Delete",format(Sys.time(),"%m/%d/%y %H:%M:%OS3"))
-      #write.table(Travel_log, "Travel_log.csv", append = TRUE, col.names = F,row.names = F)
-    }
+      write.csv(Travel_log, "travel_log_updated.csv",row.names = FALSE)
+        }
     #Log Destination socre
     else if  (any(scoresheet_dest == LogScore) == TRUE)
     {#find the row contains LogSocre
@@ -330,11 +324,12 @@ server <- function(input, output, session) {
       scoresum[sumlog_row,"Destination"]<<-sum(scoresheet_dest[,paste0("team_",input$teamname,"_Total")])
       output$shiny_scoresum = renderTable(scoresum, digits = 0)
       output$shiny_groupscore = renderTable (scoresum[scoresum[,colnames(scoresum)[1]] == input$teamname,], digits = 0)
+      write.csv(scoresum, "scoresum_updated.csv", row.names = FALSE)
+      
       
       #Track the output 
       Travel_log [dim(Travel_log)[1]+1,] <<- c(input$teamname, input$Group, input$PointScore, "Delete",format(Sys.time(), "%m/%d/%y %H:%M:%OS3"))
-      #Travel_log = c(input$teamname, input$Group, input$PointScore, "Delete",format(Sys.time(),"%m/%d/%y %H:%M:%OS3"))
-      #write.table(Travel_log, "Travel_log.csv", append = TRUE, col.names = F,row.names = F)
+      write.csv(Travel_log, "travel_log_updated.csv",row.names = FALSE)
       
       #Check whether team visited bus only stop 
       if (any(BusOnlyDest == LogScore))
@@ -348,6 +343,7 @@ server <- function(input, output, session) {
       scoresum[sumlog_row,"Bonus"]<<-sum(scoresheet_bonus[,paste0("team_",input$teamname,"_Total")])
       output$shiny_scoresum = renderTable(scoresum, digits = 0)
       output$shiny_groupscore = renderTable (scoresum[scoresum[,colnames(scoresum)[1]] == input$teamname,], digits = 0)
+      write.csv(scoresum, "scoresum_updated.csv", row.names = FALSE)
       
       }
     }
@@ -369,13 +365,18 @@ server <- function(input, output, session) {
       scoresum[sumlog_row,"Bonus"]<<-sum(scoresheet_bonus[,paste0("team_",input$teamname,"_Total")])
       output$shiny_scoresum = renderTable(scoresum, digits = 0)
       output$shiny_groupscore = renderTable (scoresum[scoresum[,colnames(scoresum)[1]] == input$teamname,], digits = 0)
+      write.csv(scoresum, "scoresum_updated.csv", row.names = FALSE)
+      
       
       #Track the change
       Travel_log [dim(Travel_log)[1]+1,] <<- c(input$teamname, input$Group, input$PointScore, "Delete",format(Sys.time(), "%m/%d/%y %H:%M:%OS3"))
-    }
+      write.csv(Travel_log, "travel_log_updated.csv",row.names = FALSE)
+      }
     #Update a total score for each group 
     nrow_sumscore<- which (scoresum  == input$teamname) 
     scoresum[nrow_sumscore,"Total"]<<-sum(as.numeric(scoresum[nrow_sumscore,2:4]))
+    write.csv(scoresum, "scoresum_updated.csv", row.names = FALSE)
+    
   })
   
   ### download data 
