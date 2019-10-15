@@ -398,7 +398,8 @@ server <- function(input, output, session) {
       write.csv(datasetInput(), file, row.names = FALSE)
     }
   )
-  
+  #allow users to reconnect instead of start new session 
+  session$allowReconnect(TRUE)
   # This is the map
  # points <- eventReactive(input$recalc, {
   #  stations
