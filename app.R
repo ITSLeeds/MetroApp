@@ -209,7 +209,7 @@ server <- function(input, output, session) {
       scoresheet_station[log_row,log_col]<<- 1
       #Calcurate the score 
       scoresheet_station[log_row,paste0("team_",input$teamname,"_Total")]<<-scoresheet_station[log_row,"Points"]
-      #write.csv(scoresheet_station, "scoresheet_station_updated.csv", row.names = FALSE)
+      write.csv(scoresheet_station, "scoresheet_station_updated.csv", row.names = FALSE,quote = TRUE)
       
       #Show the list of stations they visited 
       output$shiny_visited_st = renderTable(scoresheet_station[scoresheet_station[,paste0("team_",input$teamname,"_Total")]>0,c(names(scoresheet_station)[1:2], paste0("team_",input$teamname,"_",group_list))])
@@ -219,11 +219,11 @@ server <- function(input, output, session) {
       scoresum[sumlog_row,"Station"]<<-sum(scoresheet_station[,paste0("team_",input$teamname,"_Total")])
       output$shiny_scoresum = renderTable(scoresum, digits = 0)
       output$shiny_groupscore = renderTable (scoresum[scoresum[,colnames(scoresum)[1]] == input$teamname,], digits = 0)
-      #write.csv(scoresum, "scoresum_updated.csv", row.names = FALSE)
+      write.csv(scoresum, "scoresum_updated.csv", row.names = FALSE,quote = TRUE)
       
       #Track the output 
       Travel_log [dim(Travel_log)[1]+1,] <<- c(input$teamname, input$Group, input$PointScore, "Submit",format(Sys.time(), "%m/%d/%y %H:%M:%OS3"))
-      #write.csv(Travel_log, "travel_log_updated.csv",row.names = FALSE)
+      write.csv(Travel_log, "travel_log_updated.csv",row.names = FALSE,quote = TRUE)
     }
     #Log Destination socre
     else if  (any(scoresheet_dest == LogScore) == TRUE)
