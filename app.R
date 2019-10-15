@@ -45,7 +45,7 @@ BusOnlyDest$Score <- NULL
 bonus = read.csv("Bonus.csv")
 colnames(bonus)<- c("Bonus","Score")
 #Create Bonus name list 
-BonusName = bonus [1:3,]
+BonusName = bonus [1:4,]
 BonusName$Score <-NULL
 #Create Bonus score list 
 #BonusScore = bonus 
