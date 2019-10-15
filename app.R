@@ -90,6 +90,9 @@ scoresum[,1] = team_names
 scoresum[,"Bonus"] <- -2000
 scoresum[,"Total"] <- -2000
 
+#Travle log 
+Travel_log <- data.frame (matrix(vector(), 0, 5, dimnames=list(c(), c("Team","Group","Log","Action","Time"))))
+
 ui <- fluidPage(
   titlePanel(title = "", windowTitle = "MetroApp"),
   headerPanel(tags$img(src = "Metropoly_Logo.png")),
@@ -204,8 +207,8 @@ server <- function(input, output, session) {
       output$shiny_groupscore = renderTable (scoresum[scoresum[,colnames(scoresum)[1]] == input$teamname,], digits = 0)
       
       #Track the output 
-      Travel_log = c(input$teamname, input$Group, input$PointScore, "Log",format(Sys.time(), "%m/%d/%y %H:%M:%OS3"))
-      write.table(Travel_log, "Travel_log.csv", append = TRUE, col.names = F,row.names = F)
+      Travel_log [dim(Travel_log)[1]+1,] <<- c(input$teamname, input$Group, input$PointScore, "Submit",format(Sys.time(), "%m/%d/%y %H:%M:%OS3"))
+     # write.table(Travel_log, "Travel_log.csv", append = TRUE, col.names = F,row.names = F)
     }
     #Log Destination socre
     else if  (any(scoresheet_dest == LogScore) == TRUE)
@@ -226,9 +229,11 @@ server <- function(input, output, session) {
       scoresum[sumlog_row,"Destination"]<<-sum(scoresheet_dest[,paste0("team_",input$teamname,"_Total")])
       output$shiny_scoresum = renderTable(scoresum, digits = 0)
       output$shiny_groupscore = renderTable (scoresum[scoresum[,colnames(scoresum)[1]] == input$teamname,], digits = 0)
+      
       #Track the output 
-      Travel_log = c(input$teamname, input$Group, input$PointScore, "Delete",format(Sys.time(),"%m/%d/%y %H:%M:%OS3"))
-      write.table(Travel_log, "Travel_log.csv", append = TRUE, col.names = F,row.names = F)
+      Travel_log [dim(Travel_log)[1]+1,] <<- c(input$teamname,input$Group, input$PointScore, "Submit",format(Sys.time(), "%m/%d/%y %H:%M:%OS3")) 
+      #Travel_log = c(input$teamname, input$Group, input$PointScore, "Delete",format(Sys.time(),"%m/%d/%y %H:%M:%OS3"))
+      #write.table(Travel_log, "Travel_log.csv", append = TRUE, col.names = F,row.names = F)
       
       #Check whether team visited bus only stop 
       if (any(BusOnlyDest == LogScore))
@@ -252,6 +257,8 @@ server <- function(input, output, session) {
       #Update socresheet  
       scoresheet_bonus[log_row,log_col]<<- 1
       output$shiny_scoresheet_bonus = renderTable(scoresheet_bonus[c(names(scoresheet_bonus)[1:2], paste0("team_",input$teamname,"_",group_list))], digits = 0)
+      #Track the output 
+      Travel_log [dim(Travel_log)[1]+1,] <<- c(input$teamname, input$Group, input$PointScore, "Submit",format(Sys.time(), "%m/%d/%y %H:%M:%OS3")) 
       
       #Calcurate Bonus score 
       scoresheet_bonus[log_row,paste0("team_",input$teamname,"_Total")]<<-scoresheet_bonus[log_row,"Score"]      
@@ -293,8 +300,9 @@ server <- function(input, output, session) {
       output$shiny_groupscore = renderTable (scoresum[scoresum[,colnames(scoresum)[1]] == input$teamname,], digits = 0)
       
       #Track the output 
-      Travel_log = c(input$teamname, input$Group, input$PointScore, "Delete",format(Sys.time(),"%m/%d/%y %H:%M:%OS3"))
-      write.table(Travel_log, "Travel_log.csv", append = TRUE, col.names = F,row.names = F)
+      Travel_log [dim(Travel_log)[1]+1,] <<- c(input$teamname, input$Group, input$PointScore, "Delete",format(Sys.time(), "%m/%d/%y %H:%M:%OS3"))
+      #Travel_log = c(input$teamname, input$Group, input$PointScore, "Delete",format(Sys.time(),"%m/%d/%y %H:%M:%OS3"))
+      #write.table(Travel_log, "Travel_log.csv", append = TRUE, col.names = F,row.names = F)
     }
     #Log Destination socre
     else if  (any(scoresheet_dest == LogScore) == TRUE)
@@ -318,8 +326,9 @@ server <- function(input, output, session) {
       output$shiny_groupscore = renderTable (scoresum[scoresum[,colnames(scoresum)[1]] == input$teamname,], digits = 0)
       
       #Track the output 
-      Travel_log = c(input$teamname, input$Group, input$PointScore, "Delete",format(Sys.time(),"%m/%d/%y %H:%M:%OS3"))
-      write.table(Travel_log, "Travel_log.csv", append = TRUE, col.names = F,row.names = F)
+      Travel_log [dim(Travel_log)[1]+1,] <<- c(input$teamname, input$Group, input$PointScore, "Delete",format(Sys.time(), "%m/%d/%y %H:%M:%OS3"))
+      #Travel_log = c(input$teamname, input$Group, input$PointScore, "Delete",format(Sys.time(),"%m/%d/%y %H:%M:%OS3"))
+      #write.table(Travel_log, "Travel_log.csv", append = TRUE, col.names = F,row.names = F)
       
       #Check whether team visited bus only stop 
       if (any(BusOnlyDest == LogScore))
@@ -355,6 +364,8 @@ server <- function(input, output, session) {
       output$shiny_scoresum = renderTable(scoresum, digits = 0)
       output$shiny_groupscore = renderTable (scoresum[scoresum[,colnames(scoresum)[1]] == input$teamname,], digits = 0)
       
+      #Track the change
+      Travel_log [dim(Travel_log)[1]+1,] <<- c(input$teamname, input$Group, input$PointScore, "Delete",format(Sys.time(), "%m/%d/%y %H:%M:%OS3"))
     }
     #Update a total score for each group 
     nrow_sumscore<- which (scoresum  == input$teamname) 
