@@ -187,7 +187,7 @@ server <- function(input, output, session) {
   output$shiny_group = renderText(paste("Group",group_list[as.numeric(input$Group)]))
   output$shiny_scoresum = renderTable(scoresum, digits = 0)
   output$shiny_scorerank = renderTable(scorerank, digits = 0)
-  output$shiny_groupscore = renderTable (scoresum[scoresum[,colnames(scoresum)[1]] == input$teamname,], digits = 0)
+  #output$shiny_groupscore = renderTable (scoresum[scoresum[,colnames(scoresum)[1]] == input$teamname,], digits = 0)
  
   #Show the list of visited places
   output$shiny_visited_st = renderTable(scoresheet_station[scoresheet_station[,paste0("team_",input$teamname,"_Total")]>0,c(names(scoresheet_station)[1:2], paste0("team_",input$teamname,"_",group_list))])
