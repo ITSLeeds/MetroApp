@@ -24,7 +24,6 @@ colnames(Stationlist) <- c("Station","Points")
 StationName = Stationlist
 StationName$Points <- NULL
 
-
 #Read destination scoresheet
 destinations = read.csv("Dest_Score.csv")
 colnames(destinations)<-c("Destination","Score")
@@ -35,6 +34,33 @@ DestName$Score <-NULL
 BusOnlyDest <- read.csv("BusOnlyDest.csv")
 BusOnlyDest$Score <- NULL
 
+#Create/load station scoresheet
+if(file.exists("scoresheet_station_updated.csv")){
+  scoresheet_station <- readr::read_csv("scoresheet_station_updated.csv")
+}else{
+# Idea: select team at the beginning
+# stations = readr::read_csv("stations.csv") # todo: create stations .csv with name and number points
+# robin to geocode them and put on map
+stations = sf::read_sf("stations.geojson")
+#Create score sheet for station
+station_vector = rep(0, nrow(stations))
+repl_station_vecotr = replicate(length(team_columns_names), station_vector)
+scoresheet_station = cbind(sf::st_drop_geometry(stations), repl_station_vecotr)
+names(scoresheet_station)[4:ncol(scoresheet_station)] = team_columns_names
+}
+
+#Create/load station scoresheet
+if(file.exists("scoresheet_dest_updated.csv")){
+  scoresheet_dest <- readr::read_csv("scoresheet_dest_updated.csv")
+}else{
+#create intial socre sheet for  destinations
+dest_vector = rep (0, nrow(DestName))
+repl_dest_vector = replicate(length(team_columns_names),dest_vector)
+#Create score sheet for destination 
+scoresheet_dest = cbind(destinations,repl_dest_vector)
+names(scoresheet_dest)[3:ncol(scoresheet_dest)] =team_columns_names
+}
+
 
 #Read Bonus scoresheet
 bonus = read.csv("Bonus.csv")
@@ -43,30 +69,15 @@ colnames(bonus)<- c("Bonus","Score")
 BonusName = bonus [1:4,]
 BonusName$Score <-NULL
 
-# Idea: select team at the beginning
-# stations = readr::read_csv("stations.csv") # todo: create stations .csv with name and number points
-# robin to geocode them and put on map
-stations = sf::read_sf("stations.geojson")
-station_vector = rep(0, nrow(stations))
-#create intial socre sheet for bonus point and destinations
-dest_vector = rep (0, nrow(DestName))
+#Create score sheet for bonus point
 bonus_vector = rep(0,nrow(bonus))
-
-repl_station_vecotr = replicate(length(team_columns_names), station_vector)
-repl_dest_vector = replicate(length(team_columns_names),dest_vector)
 repl_bonus_vector = replicate(length(team_columns_names),bonus_vector)
-
-#Create score sheet for station
-scoresheet_station = cbind(sf::st_drop_geometry(stations), repl_station_vecotr)
-names(scoresheet_station)[4:ncol(scoresheet_station)] = team_columns_names
-#Create score sheet for destination 
-scoresheet_dest = cbind(destinations,repl_dest_vector)
-names(scoresheet_dest)[3:ncol(scoresheet_dest)] =team_columns_names
 #Create socre sheet for bonus 
 scoresheet_bonus = cbind(bonus,repl_bonus_vector) 
 names(scoresheet_bonus)[3:ncol(scoresheet_bonus)] =team_columns_names
 VBO_row = which (scoresheet_bonus == "Visit Bus only")
 scoresheet_bonus[VBO_row,paste0("team_",team_names,"_Total")] <- -2000
+
 
 #Create/load score summary 
 if(file.exists("scoresum_updated.csv")){
@@ -192,6 +203,7 @@ server <- function(input, output, session) {
       scoresheet_station[log_row,log_col]<<- 1
       #Calcurate the score 
       scoresheet_station[log_row,paste0("team_",input$teamname,"_Total")]<<-scoresheet_station[log_row,"Points"]
+      write.csv(scoresheet_station, "scoresheet_station_updated.csv", row.names = FALSE)
       
       #Show the list of stations they visited 
       output$shiny_visited_st = renderTable(scoresheet_station[scoresheet_station[,paste0("team_",input$teamname,"_Total")]>0,c(names(scoresheet_station)[1:2], paste0("team_",input$teamname,"_",group_list))])
@@ -216,6 +228,7 @@ server <- function(input, output, session) {
       
       #Calculate the score 
       scoresheet_dest[log_row,paste0("team_",input$teamname,"_Total")]<<-scoresheet_dest[log_row,"Score"]      
+      write.csv(scoresheet_dest, "scoresheet_dest_updated.csv",row.names = FALSE)
       
       #Show the list of destination they visited 
       output$shiny_visited_dest = renderTable(scoresheet_dest[scoresheet_dest[,paste0("team_",input$teamname,"_Total")]>0,c(names(scoresheet_dest)[1:2], paste0("team_",input$teamname,"_",group_list))])
@@ -285,10 +298,13 @@ server <- function(input, output, session) {
       log_row = which(scoresheet_station == LogScore)
       #Update score table 
       scoresheet_station[log_row,log_col]<<- 0
+      write.csv(scoresheet_station, "scoresheet_station_updated.csv", row.names = FALSE)
+      
       
       # Delete the score if other group has not scored 
       if (any(scoresheet_station[log_row, paste0("team_",input$teamname,"_",group_list[1:2])] == 1) == FALSE)
       {scoresheet_station[log_row,paste0("team_",input$teamname,"_Total")]<<- 0 }
+      write.csv(scoresheet_station, "scoresheet_station_updated.csv", row.names = FALSE)
       
       #Show the list of stations they visited 
       output$shiny_visited_st = renderTable(scoresheet_station[scoresheet_station[,paste0("team_",input$teamname,"_Total")]>0,c(names(scoresheet_station)[1:2], paste0("team_",input$teamname,"_",group_list))])
@@ -310,10 +326,12 @@ server <- function(input, output, session) {
       log_row = which(scoresheet_dest == LogScore)
       #Update scoresheet 
       scoresheet_dest[log_row,log_col]<<- 0
+      write.csv(scoresheet_dest, "scoresheet_dest_updated.csv",row.names = FALSE)
       
       # Delete the score if other group has not scored 
       if (any(scoresheet_dest[log_row, paste0("team_",input$teamname,"_",group_list[1:2])] == 1) == FALSE)
       {scoresheet_dest[log_row,paste0("team_",input$teamname,"_Total")]<<- 0 
+      write.csv(scoresheet_dest, "scoresheet_dest_updated.csv",row.names = FALSE)
       }
      
       #Show the list of destination they visited 
