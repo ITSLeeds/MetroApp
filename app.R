@@ -207,7 +207,7 @@ server <- function(input, output, session) {
       output$shiny_groupscore = renderTable (scoresum[scoresum[,colnames(scoresum)[1]] == input$teamname,], digits = 0)
       
       #Track the output 
-      #Travel_log [dim(Travel_log)[1]+1,] <<- c(input$teamname, input$Group, input$PointScore, "Submit",format(Sys.time(), "%m/%d/%y %H:%M:%OS3"))
+      Travel_log [dim(Travel_log)[1]+1,] <<- c(input$teamname, input$Group, input$PointScore, "Submit",format(Sys.time(), "%m/%d/%y %H:%M:%OS3"))
      # write.table(Travel_log, "Travel_log.csv", append = TRUE, col.names = F,row.names = F)
     }
     #Log Destination socre
